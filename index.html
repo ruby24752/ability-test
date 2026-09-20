@@ -213,17 +213,16 @@ body{
 
   <!-- ===== 首页 ===== -->
   <section class="view active" id="view-start">
-    <div class="music-btn" id="musicBtn" title="背景音乐">🔇</div>
     <svg class="dino" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <!-- 博士帽 -->
-      <ellipse cx="100" cy="58" rx="48" ry="12" fill="#3A2A1A"/>
-      <rect x="62" y="48" width="76" height="14" rx="4" fill="#3A2A1A"/>
+      <!-- 蓝色博士帽 -->
+      <ellipse cx="100" cy="58" rx="48" ry="12" fill="#3B5BDB"/>
+      <rect x="62" y="48" width="76" height="14" rx="4" fill="#3B5BDB"/>
       <rect x="96" y="30" width="8" height="24" fill="#FFD93D"/>
       <circle cx="100" cy="28" r="5" fill="#FFD93D"/>
-      <!-- 恐龙头 -->
-      <ellipse cx="100" cy="105" rx="52" ry="44" fill="#7EC850"/>
-      <!-- 肚皮 -->
-      <ellipse cx="100" cy="120" rx="32" ry="26" fill="#B8E08A"/>
+      <!-- 橘色恐龙头 -->
+      <ellipse cx="100" cy="105" rx="52" ry="44" fill="#FF9F45"/>
+      <!-- 浅橘肚皮 -->
+      <ellipse cx="100" cy="120" rx="32" ry="26" fill="#FFD9A8"/>
       <!-- 眼睛 -->
       <circle cx="82" cy="95" r="10" fill="#fff"/>
       <circle cx="118" cy="95" r="10" fill="#fff"/>
@@ -232,13 +231,13 @@ body{
       <circle cx="86" cy="94" r="2" fill="#fff"/>
       <circle cx="118" cy="94" r="2" fill="#fff"/>
       <!-- 腮红 -->
-      <ellipse cx="68" cy="112" rx="8" ry="5" fill="#FF9F9F" opacity=".7"/>
-      <ellipse cx="132" cy="112" rx="8" ry="5" fill="#FF9F9F" opacity=".7"/>
+      <ellipse cx="68" cy="112" rx="8" ry="5" fill="#FF7A7A" opacity=".7"/>
+      <ellipse cx="132" cy="112" rx="8" ry="5" fill="#FF7A7A" opacity=".7"/>
       <!-- 微笑嘴 -->
       <path d="M88 122 Q100 132 112 122" stroke="#2A1A0A" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <!-- 背刺 -->
-      <path d="M55 85 L48 72 L60 78 Z" fill="#5A9A30"/>
-      <path d="M145 85 L152 72 L140 78 Z" fill="#5A9A30"/>
+      <!-- 橘色背刺 -->
+      <path d="M55 85 L48 72 L60 78 Z" fill="#E6702A"/>
+      <path d="M145 85 L152 72 L140 78 Z" fill="#E6702A"/>
     </svg>
     <h1 class="app-title">儿童<em>多元智能</em><br>趣味小测评</h1>
     <p class="app-sub">16 道小题，看看孩子天生擅长什么～</p>
@@ -401,10 +400,16 @@ function renderQuestion(){
   btnNext.textContent = (i===QUESTIONS.length-1) ? '查看结果 →' : '下一题 →';
 }
 
-document.getElementById('btnStart').onclick = ()=>{ G.qIndex=0; renderQuestion(); showView('view-quiz'); };
+document.getElementById('btnStart').onclick = ()=>{
+  // 首次点击初始化音频上下文（微信浏览器要求用户先交互）
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  G.qIndex=0; renderQuestion(); showView('view-quiz');
+};
 document.getElementById('btnPrev').onclick = ()=>{ if(G.qIndex>0){ G.qIndex--; renderQuestion(); } };
 document.getElementById('btnNext').onclick = ()=>{
   if(G.answers[G.qIndex]===null) return;
+  playDing();
   if(G.qIndex < QUESTIONS.length-1){ G.qIndex++; renderQuestion(); }
   else{ finishQuiz(); }
 };
@@ -534,74 +539,40 @@ function restart(){
 }
 document.getElementById('btnReport').onclick = ()=>showView('view-report');
 
-/* ================= 背景音乐 ================= */
+/* ================= 按键音效 ================= */
 let audioCtx = null;
-let musicPlaying = false;
-let musicTimer = null;
-let musicGain = null;
 
-function initAudio(){
-  if(audioCtx) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  musicGain = audioCtx.createGain();
-  musicGain.gain.value = 0.15; // 低音量
-  musicGain.connect(audioCtx.destination);
-}
-
-function playNote(freq, start, dur){
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = 'sine';
-  osc.frequency.value = freq;
-  gain.gain.setValueAtTime(0, audioCtx.currentTime + start);
-  gain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + start + 0.05);
-  gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + start + dur);
-  osc.connect(gain);
-  gain.connect(musicGain);
-  osc.start(audioCtx.currentTime + start);
-  osc.stop(audioCtx.currentTime + start + dur);
-}
-
-// 简单轻快旋律：C大调小星星变奏
-const melody = [
-  {f:523.25, t:0,   d:0.3}, // C
-  {f:523.25, t:0.3, d:0.3}, // C
-  {f:587.33, t:0.6, d:0.3}, // D
-  {f:587.33, t:0.9, d:0.3}, // D
-  {f:659.25, t:1.2, d:0.3}, // E
-  {f:659.25, t:1.5, d:0.3}, // E
-  {f:587.33, t:1.8, d:0.5}, // D
-  {f:523.25, t:2.3, d:0.3}, // C
-  {f:523.25, t:2.6, d:0.3}, // C
-  {f:587.33, t:2.9, d:0.3}, // D
-  {f:587.33, t:3.2, d:0.3}, // D
-  {f:523.25, t:3.5, d:0.3}, // C
-  {f:523.25, t:3.8, d:0.5}, // C
-];
-
-function playMelody(){
-  melody.forEach(n => playNote(n.f, n.t, n.d));
-  musicTimer = setTimeout(playMelody, 4300); // 循环
-}
-
-function toggleMusic(){
-  const btn = document.getElementById('musicBtn');
-  if(!audioCtx) initAudio();
+function playDing(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if(audioCtx.state === 'suspended') audioCtx.resume();
+  const now = audioCtx.currentTime;
 
-  if(musicPlaying){
-    musicPlaying = false;
-    clearTimeout(musicTimer);
-    btn.textContent = '🔇';
-    btn.classList.remove('playing');
-  } else {
-    musicPlaying = true;
-    btn.textContent = '🔊';
-    btn.classList.add('playing');
-    playMelody();
-  }
+  // 叮（高频）
+  const osc1 = audioCtx.createOscillator();
+  const gain1 = audioCtx.createGain();
+  osc1.type = 'sine';
+  osc1.frequency.value = 880; // A5
+  gain1.gain.setValueAtTime(0.001, now);
+  gain1.gain.exponentialRampToValueAtTime(0.25, now + 0.01);
+  gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+  osc1.connect(gain1);
+  gain1.connect(audioCtx.destination);
+  osc1.start(now);
+  osc1.stop(now + 0.3);
+
+  // 咚（低频，稍微延迟）
+  const osc2 = audioCtx.createOscillator();
+  const gain2 = audioCtx.createGain();
+  osc2.type = 'sine';
+  osc2.frequency.value = 440; // A4
+  gain2.gain.setValueAtTime(0.001, now + 0.12);
+  gain2.gain.exponentialRampToValueAtTime(0.2, now + 0.13);
+  gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+  osc2.connect(gain2);
+  gain2.connect(audioCtx.destination);
+  osc2.start(now + 0.12);
+  osc2.stop(now + 0.5);
 }
-document.getElementById('musicBtn').onclick = toggleMusic;
 
 /* ================= 背景装饰 ================= */
 (function(){
