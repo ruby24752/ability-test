@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>儿童多元智能趣味测评</title>
+<link rel="preconnect" href="https://miaoda.feishu.cn">
+<link href="https://miaoda.feishu.cn/fonts/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+:root{
+  --cream:#FFF6DE;
+  --cream-2:#FFEDBE;
+  --card:#FFFFFF;
+  --ink:#4A3B2A;
+  --ink-2:#7A6852;
+  --ink-3:#A89880;
+  --line:#F0DFB8;
+  --accent:#FF8A3D;
+  --accent-deep:#E67020;
+  /* 8大智能颜色 */
+  --lang:#F5C542;      /* 语言 黄 */
+  --logic:#6BCB77;     /* 逻辑 绿 */
+  --space:#FF9F45;     /* 空间 橙 */
+  --body:#FF6B6B;      /* 动觉 红 */
+  --music:#FF8FB1;     /* 音乐 粉 */
+  --social:#A78BFA;    /* 人际 紫 */
+  --self:#6C8CFF;      /* 内省 蓝紫 */
+  --nature:#8FAE5D;    /* 自然 卡其绿 */
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;}
+body{
+  background:var(--cream);
+  color:var(--ink);
+  font-family:"ZCOOL KuaiLe","Noto Sans SC",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* 背景装饰 */
+.bg-deco{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.bg-deco .star{position:absolute;font-size:24px;opacity:.35;}
+
+/* 主容器 */
+.app{
+  position:relative;z-index:1;
+  width:100%;max-width:480px;height:100svh;
+  margin:0 auto;display:flex;flex-direction:column;
+  padding:20px 18px 24px;
+}
+
+/* 视图切换 */
+.view{display:none;flex-direction:column;height:100%;}
+.view.active{display:flex;animation:fadeUp .45s cubic-bezier(.2,.8,.2,1);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+
+/* ===== 首页 ===== */
+#view-start{align-items:center;justify-content:center;text-align:center;}
+.mascot{
+  width:130px;height:130px;border-radius:50%;
+  background:linear-gradient(145deg,#FFE9A8,#FFD06B);
+  display:grid;place-items:center;font-size:64px;
+  box-shadow:0 10px 0 #E6B84A, 0 18px 30px rgba(230,184,74,.35);
+  margin-bottom:24px;
+}
+.app-title{font-size:34px;font-weight:900;line-height:1.25;color:var(--ink);margin-bottom:8px;}
+.app-title em{font-style:normal;color:var(--accent);}
+.app-sub{font-size:15px;color:var(--ink-2);line-height:1.8;margin-bottom:28px;max-width:320px;}
+.tag-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:32px;}
+.tag{
+  padding:6px 14px;border-radius:999px;font-size:13px;
+  background:var(--card);border:2px solid var(--line);color:var(--ink-2);
+}
+.btn-main{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:16px 42px;border:none;border-radius:999px;
+  background:linear-gradient(145deg,#FF9F45,#FF7A2E);color:#fff;
+  font-family:inherit;font-size:20px;font-weight:900;cursor:pointer;
+  box-shadow:0 8px 0 #D65E15, 0 14px 24px rgba(255,122,46,.35);
+  transition:transform .15s,box-shadow .15s;
+}
+.btn-main:active{transform:translateY(4px);box-shadow:0 4px 0 #D65E15;}
+.tip{margin-top:18px;font-size:12px;color:var(--ink-3);}
+
+/* ===== 答题页 ===== */
+#view-quiz .q-head{margin-bottom:16px;}
+.q-progress-label{font-size:13px;color:var(--ink-2);margin-bottom:8px;display:flex;justify-content:space-between;}
+.q-progress-bar{height:10px;background:var(--cream-2);border-radius:999px;overflow:hidden;}
+.q-progress-bar i{display:block;height:100%;background:linear-gradient(90deg,#FFB84D,#FF8A3D);border-radius:999px;transition:width .35s ease;}
+.q-card{
+  background:var(--card);border-radius:24px;padding:26px 22px;
+  box-shadow:0 6px 0 #F0DFB8, 0 12px 24px rgba(180,150,80,.12);
+  margin-bottom:18px;
+}
+.q-eyebrow{font-size:13px;color:var(--accent);margin-bottom:10px;font-weight:700;}
+.q-text{font-size:20px;line-height:1.6;color:var(--ink);font-weight:700;}
+.opts{display:flex;flex-direction:column;gap:12px;}
+.opt{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 18px;border-radius:18px;
+  background:var(--card);border:3px solid var(--line);
+  font-family:inherit;font-size:17px;color:var(--ink);
+  cursor:pointer;text-align:left;
+  transition:all .2s ease;
+  box-shadow:0 4px 0 var(--line);
+}
+.opt .opt-key{
+  flex:none;width:36px;height:36px;border-radius:12px;
+  display:grid;place-items:center;font-size:15px;font-weight:900;
+  background:var(--cream-2);color:var(--ink-2);
+}
+.opt:hover,.opt.picked{border-color:var(--accent);background:#FFF3E2;transform:translateY(-2px);}
+.opt.picked{background:#FFE8CC;border-color:var(--accent);}
+.opt.picked .opt-key{background:var(--accent);color:#fff;}
+.q-foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:8px;}
+.btn-ghost{
+  padding:12px 24px;border-radius:999px;border:2px solid var(--line);
+  background:var(--card);font-family:inherit;font-size:15px;color:var(--ink-2);cursor:pointer;
+}
+.btn-ghost:disabled{opacity:.4;cursor:default;}
+.btn-next{
+  padding:12px 28px;border-radius:999px;border:none;
+  background:var(--accent);color:#fff;font-family:inherit;font-size:16px;font-weight:900;cursor:pointer;
+  box-shadow:0 4px 0 #D65E15;
+}
+.btn-next:disabled{opacity:.4;box-shadow:none;}
+
+/* ===== 雷达图结果页 ===== */
+#view-radar{text-align:center;align-items:center;}
+.result-badge{
+  padding:10px 22px;border-radius:999px;background:var(--card);
+  border:2px solid var(--line);font-size:14px;color:var(--ink-2);margin-bottom:14px;
+}
+.result-badge b{color:var(--accent);}
+.result-title{font-size:28px;font-weight:900;margin-bottom:6px;}
+.result-sub{font-size:14px;color:var(--ink-2);margin-bottom:18px;}
+.radar-wrap{
+  width:100%;max-width:360px;height:360px;
+  background:var(--card);border-radius:24px;
+  box-shadow:0 6px 0 #F0DFB8, 0 12px 24px rgba(180,150,80,.12);
+  padding:12px;margin-bottom:20px;
+}
+.top2{display:flex;gap:10px;justify-content:center;margin-bottom:22px;flex-wrap:wrap;}
+.top-tag{
+  padding:8px 16px;border-radius:14px;font-size:14px;font-weight:700;color:#fff;
+}
+
+/* ===== 分项报告页 ===== */
+#view-report .report-head{text-align:center;margin-bottom:16px;}
+.report-head h2{font-size:26px;font-weight:900;margin-bottom:4px;}
+.report-head p{font-size:13px;color:var(--ink-2);}
+.report-list{flex:1;overflow-y:auto;padding-bottom:10px;display:flex;flex-direction:column;gap:12px;}
+.report-item{
+  background:var(--card);border-radius:18px;padding:16px;
+  box-shadow:0 4px 0 #F0DFB8;
+  border-left:6px solid var(--item-c,var(--accent));
+}
+.report-item .ri-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.ri-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:20px;flex:none;}
+.ri-name{font-size:16px;font-weight:900;flex:1;}
+.ri-score{font-size:14px;font-weight:700;color:var(--ink-2);}
+.ri-bar{height:8px;background:var(--cream-2);border-radius:999px;overflow:hidden;margin-bottom:8px;}
+.ri-bar i{display:block;height:100%;border-radius:999px;background:var(--item-c,var(--accent));}
+.ri-desc{font-size:13px;color:var(--ink-2);line-height:1.6;}
+.ri-level{
+  display:inline-block;padding:2px 10px;border-radius:999px;
+  font-size:11px;font-weight:700;color:#fff;margin-left:6px;
+}
+
+/* ===== 养育建议页 ===== */
+#view-advice .advice-head{text-align:center;margin-bottom:16px;}
+.advice-head h2{font-size:26px;font-weight:900;margin-bottom:4px;}
+.advice-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-bottom:12px;}
+.advice-card{
+  background:var(--card);border-radius:20px;padding:18px;
+  box-shadow:0 4px 0 #F0DFB8;
+}
+.advice-card h3{font-size:17px;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.advice-card h3 .dot{width:12px;height:12px;border-radius:50%;flex:none;}
+.advice-card ul{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.advice-card li{
+  font-size:14px;color:var(--ink-2);line-height:1.7;padding-left:18px;position:relative;
+}
+.advice-card li::before{content:'✦';position:absolute;left:0;color:var(--accent);}
+.disclaimer{
+  margin-top:14px;padding:12px 14px;border-radius:14px;
+  background:#FFF0F0;font-size:12px;color:#B05050;line-height:1.6;text-align:center;
+}
+</style>
+</head>
+<body>
+<div class="bg-deco" id="bgDeco"></div>
+
+<div class="app">
+
+  <!-- ===== 首页 ===== -->
+  <section class="view active" id="view-start">
+    <div class="mascot">🧒</div>
+    <h1 class="app-title">儿童<em>多元智能</em><br>趣味小测评</h1>
+    <p class="app-sub">基于哈佛加德纳多元智能理论，16 道小题，看看孩子天生擅长什么～</p>
+    <div class="tag-row">
+      <span class="tag">📖 语言</span>
+      <span class="tag">🧮 逻辑</span>
+      <span class="tag">🎨 空间</span>
+      <span class="tag">🏃 动觉</span>
+      <span class="tag">🎵 音乐</span>
+      <span class="tag">🤝 人际</span>
+      <span class="tag">🪞 内省</span>
+      <span class="tag">🌱 自然</span>
+    </div>
+    <button class="btn-main" id="btnStart">开始测评 →</button>
+    <p class="tip">家长根据孩子日常真实表现作答即可</p>
+  </section>
+
+  <!-- ===== 答题页 ===== -->
+  <section class="view" id="view-quiz">
+    <div class="q-head">
+      <div class="q-progress-label">
+        <span id="qNum">第 1 题 / 16 题</span>
+        <span id="qPct">6%</span>
+      </div>
+      <div class="q-progress-bar"><i id="qBar" style="width:6%"></i></div>
+    </div>
+    <div class="q-card">
+      <div class="q-eyebrow" id="qEyebrow">语言智能</div>
+      <div class="q-text" id="qText">题目加载中…</div>
+    </div>
+    <div class="opts" id="opts"></div>
+    <div class="q-foot">
+      <button class="btn-ghost" id="btnPrev">← 上一题</button>
+      <button class="btn-next" id="btnNext" disabled>下一题 →</button>
+    </div>
+  </section>
+
+  <!-- ===== 雷达图结果页 ===== -->
+  <section class="view" id="view-radar">
+    <div class="result-badge">测评完成 · 你的孩子是 <b id="topType">—</b> 型小天才</div>
+    <h2 class="result-title">✨ 天赋雷达图</h2>
+    <p class="result-sub">八个维度一览，颜色越高越擅长</p>
+    <div class="radar-wrap" id="radarChart"></div>
+    <div class="top2" id="topTags"></div>
+    <button class="btn-main" id="btnReport">查看完整报告 →</button>
+  </section>
+
+  <!-- ===== 分项报告页 ===== -->
+  <section class="view" id="view-report">
+    <div class="report-head">
+      <h2>📊 八项能力报告</h2>
+      <p>根据作答自动生成，分数越高越擅长</p>
+    </div>
+    <div class="report-list" id="reportList"></div>
+    <div class="q-foot">
+      <button class="btn-ghost" onclick="showView('view-radar')">← 雷达图</button>
+      <button class="btn-next" onclick="showView('view-advice')">养育建议 →</button>
+    </div>
+  </section>
+
+  <!-- ===== 养育建议页 ===== -->
+  <section class="view" id="view-advice">
+    <div class="advice-head">
+      <h2>🌱 个性化养育建议</h2>
+      <p>围绕孩子的优势方向培养</p>
+    </div>
+    <div class="advice-list" id="adviceList"></div>
+    <div class="disclaimer">
+      温馨提示：本测评基于多元智能理论，仅作为孩子兴趣能力倾向趣味参考，不属于专业心理评估，结果仅供家庭教育参考。
+    </div>
+    <div class="q-foot">
+      <button class="btn-ghost" onclick="showView('view-report')">← 报告</button>
+      <button class="btn-next" onclick="restart()">重新测一次</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ================= 数据 ================= */
+const INTELLIGENCES = [
+  { key:'lang',  name:'语言智能',   icon:'📖', color:'#F5C542', desc:'爱讲故事、表达清楚、识字早、记忆力强', career:'小记者 / 作家 / 主持人 / 律师' },
+  { key:'logic', name:'逻辑-数学', icon:'🧮', color:'#6BCB77', desc:'爱问为什么、喜欢找规律、下棋解谜、做事有条理', career:'科学家 / 程序员 / 工程师 / 金融分析' },
+  { key:'space', name:'空间智能',   icon:'🎨', color:'#FF9F45', desc:'爱画画搭积木、想象力丰富、方向感好', career:'画家 / 设计师 / 建筑师 / 摄影师' },
+  { key:'body',  name:'身体动觉',   icon:'🏃', color:'#FF6B6B', desc:'爱运动、肢体协调、模仿力强、动手能力好', career:'运动员 / 舞蹈家 / 演员 / 外科医生' },
+  { key:'music', name:'音乐智能',   icon:'🎵', color:'#FF8FB1', desc:'听到音乐就摇摆、爱哼唱、节奏感好', career:'歌手 / 作曲家 / 乐手 / 音乐制作' },
+  { key:'social',name:'人际智能',   icon:'🤝', color:'#A78BFA', desc:'会交朋友、会照顾人情绪、是孩子王', career:'教师 / 心理咨询师 / 公关 / 领导者' },
+  { key:'self',  name:'内省智能',   icon:'🪞', color:'#6C8CFF', desc:'喜欢独立思考、清楚自己喜好、自控力强', career:'哲学家 / 研究员 / 作家 / 独立创作者' },
+  { key:'nature',name:'自然智能',   icon:'🌱', color:'#8FAE5D', desc:'喜欢动植物、爱户外观察、收集树叶石头', career:'生物学家 / 兽医 / 园艺师 / 环保专家' }
+];
+
+const QUESTIONS = [
+  { dim:'lang',  q:'孩子很喜欢讲故事，很早就认识不少字'},
+  { dim:'lang',  q:'复述故事细节记得很牢，玩词语接龙很厉害'},
+  { dim:'logic', q:'总喜欢追问事物原理，对数字、拼图解谜很感兴趣'},
+  { dim:'logic', q:'遇到问题喜欢梳理先后顺序，喜欢棋类游戏'},
+  { dim:'space', q:'爱画画、搭积木，看图就能脑补出画面，不容易迷路'},
+  { dim:'space', q:'随手就爱涂鸦，能看懂地图、搭建复杂积木造型'},
+  { dim:'body',  q:'肢体协调性好，喜欢跑跳、模仿动作，爱拆小东西研究'},
+  { dim:'body',  q:'运动、跳舞时平衡感好，动手手工做得不错'},
+  { dim:'music', q:'听到音乐会跟着哼唱摇摆，对声音、旋律很敏感'},
+  { dim:'music', q:'听一遍旋律就能记住，能分辨音调高低'},
+  { dim:'social',q:'很会照顾小伙伴情绪，喜欢组织小朋友一起玩游戏'},
+  { dim:'social',q:'能察觉到别人情绪变化，小伙伴愿意找他倾诉'},
+  { dim:'self',  q:'习惯独自安静思考，清楚自己喜欢什么，情绪稳定自控好'},
+  { dim:'self',  q:'有自己的小目标，愿意写日记记录心情想法'},
+  { dim:'nature',q:'喜欢去户外观察花草小动物，会收集树叶、石头'},
+  { dim:'nature',q:'留意四季变化，喜欢观察昆虫、植物生长'}
+];
+
+const OPTIONS = [
+  { label:'A', text:'非常符合', val:4 },
+  { label:'B', text:'比较符合', val:3 },
+  { label:'C', text:'偶尔符合', val:2 },
+  { label:'D', text:'不太符合', val:1 }
+];
+
+/* ================= 状态 ================= */
+const G = { qIndex:0, answers:new Array(QUESTIONS.length).fill(null) };
+let radarChart = null;
+
+/* ================= 视图切换 ================= */
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ================= 答题 ================= */
+function renderQuestion(){
+  const i = G.qIndex;
+  const q = QUESTIONS[i];
+  const dimInfo = INTELLIGENCES.find(d=>d.key===q.dim);
+  document.getElementById('qNum').textContent = `第 ${i+1} 题 / ${QUESTIONS.length} 题`;
+  const pct = Math.round((i+1)/QUESTIONS.length*100);
+  document.getElementById('qPct').textContent = pct+'%';
+  document.getElementById('qBar').style.width = pct+'%';
+  document.getElementById('qEyebrow').textContent = dimInfo.icon+' '+dimInfo.name;
+  document.getElementById('qText').textContent = q.q+'？';
+
+  const optsEl = document.getElementById('opts');
+  optsEl.innerHTML = '';
+  OPTIONS.forEach((o,idx)=>{
+    const b = document.createElement('button');
+    b.className = 'opt'+(G.answers[i]===idx?' picked':'');
+    b.innerHTML = `<span class="opt-key">${o.label}</span><span>${o.text}</span>`;
+    b.onclick = ()=>{
+      G.answers[i] = idx;
+      document.querySelectorAll('.opt').forEach(x=>x.classList.remove('picked'));
+      b.classList.add('picked');
+      document.getElementById('btnNext').disabled = false;
+    };
+    optsEl.appendChild(b);
+  });
+
+  document.getElementById('btnPrev').disabled = (i===0);
+  const btnNext = document.getElementById('btnNext');
+  btnNext.disabled = (G.answers[i]===null);
+  btnNext.textContent = (i===QUESTIONS.length-1) ? '查看结果 →' : '下一题 →';
+}
+
+document.getElementById('btnStart').onclick = ()=>{ G.qIndex=0; renderQuestion(); showView('view-quiz'); };
+document.getElementById('btnPrev').onclick = ()=>{ if(G.qIndex>0){ G.qIndex--; renderQuestion(); } };
+document.getElementById('btnNext').onclick = ()=>{
+  if(G.answers[G.qIndex]===null) return;
+  if(G.qIndex < QUESTIONS.length-1){ G.qIndex++; renderQuestion(); }
+  else{ finishQuiz(); }
+};
+
+/* ================= 计分 ================= */
+function calcScores(){
+  const scores = {};
+  INTELLIGENCES.forEach(d=>scores[d.key]=0);
+  QUESTIONS.forEach((q,i)=>{
+    const idx = G.answers[i];
+    if(idx!==null) scores[q.dim] += OPTIONS[idx].val;
+  });
+  return scores;
+}
+
+function finishQuiz(){
+  const scores = calcScores();
+  // 排序找 top2
+  const sorted = INTELLIGENCES.slice().sort((a,b)=>scores[b.key]-scores[a.key]);
+  const top1 = sorted[0], top2 = sorted[1];
+  document.getElementById('topType').textContent = top1.name.replace('智能','').replace('智能','');
+  document.getElementById('topTags').innerHTML =
+    `<span class="top-tag" style="background:${top1.color}">🥇 ${top1.name} · ${scores[top1.key]}分</span>`+
+    `<span class="top-tag" style="background:${top2.color}">🥈 ${top2.name} · ${scores[top2.key]}分</span>`;
+
+  renderRadar(scores);
+  renderReport(scores);
+  renderAdvice(scores, sorted);
+  showView('view-radar');
+}
+
+/* ================= 雷达图 ================= */
+function renderRadar(scores){
+  const el = document.getElementById('radarChart');
+  if(!radarChart) radarChart = echarts.init(el);
+  radarChart.setOption({
+    radar:{
+      indicator: INTELLIGENCES.map(d=>({name:d.name.replace('智能','').replace('智能',''), max:8})),
+      radius: '68%',
+      center:['50%','52%'],
+      axisName:{ color:'#7A6852', fontSize:12, fontFamily:'ZCOOL KuaiLe' },
+      splitArea:{ areaStyle:{ color:['#FFF8E7','#FFF3D0','#FFEDBE'] } },
+      splitLine:{ lineStyle:{ color:'#E8D5A8' } },
+      axisLine:{ lineStyle:{ color:'#E8D5A8' } }
+    },
+    series:[{
+      type:'radar',
+      data:[{
+        value: INTELLIGENCES.map(d=>scores[d.key]),
+        name:'天赋得分',
+        areaStyle:{ color:'rgba(255,138,61,.35)' },
+        lineStyle:{ color:'#FF8A3D', width:3 },
+        itemStyle:{ color:'#FF8A3D' }
+      }]
+    }]
+  });
+  setTimeout(()=>radarChart.resize(), 100);
+}
+
+/* ================= 分项报告 ================= */
+function levelOf(score){
+  if(score>=7) return {t:'非常擅长', c:'#6BCB77'};
+  if(score>=5) return {t:'有些擅长', c:'#F5C542'};
+  if(score>=3) return {t:'一般水平', c:'#FF9F45'};
+  return {t:'有待提升', c:'#FF6B6B'};
+}
+function renderReport(scores){
+  const list = document.getElementById('reportList');
+  list.innerHTML = '';
+  INTELLIGENCES.forEach(d=>{
+    const s = scores[d.key];
+    const lv = levelOf(s);
+    const pct = Math.round(s/8*100);
+    const div = document.createElement('div');
+    div.className = 'report-item';
+    div.style.setProperty('--item-c', d.color);
+    div.innerHTML = `
+      <div class="ri-top">
+        <div class="ri-icon" style="background:${d.color}22">${d.icon}</div>
+        <div class="ri-name">${d.name}<span class="ri-level" style="background:${lv.c}">${lv.t}</span></div>
+        <div class="ri-score">${s}/8 分</div>
+      </div>
+      <div class="ri-bar"><i style="width:${pct}%;background:${d.color}"></i></div>
+      <div class="ri-desc">${d.desc}<br>💡 适合方向：${d.career}</div>`;
+    list.appendChild(div);
+  });
+}
+
+/* ================= 养育建议 ================= */
+function renderAdvice(scores, sorted){
+  const top3 = sorted.slice(0,3);
+  const weak = sorted.slice(-2);
+  const list = document.getElementById('adviceList');
+  list.innerHTML = '';
+
+  // 优势培养
+  const adv1 = document.createElement('div');
+  adv1.className = 'advice-card';
+  adv1.innerHTML = `<h3><span class="dot" style="background:${top3[0].color}"></span>✨ 优势方向 · 重点培养</h3>
+    <ul>${top3.map(d=>`<li><b style="color:${d.color}">${d.icon}${d.name}</b>：${d.desc}，可以多接触 ${d.career.split(' / ')[0]} 相关的活动和兴趣班。</li>`).join('')}</ul>`;
+  list.appendChild(adv1);
+
+  // 日常引导
+  const adv2 = document.createElement('div');
+  adv2.className = 'advice-card';
+  adv2.innerHTML = `<h3><span class="dot" style="background:#FF9F45"></span>🌟 日常引导 · 鼓励为主</h3>
+    <ul>
+      <li>多表扬孩子的努力过程，不只夸"聪明"，保护他的探索兴趣</li>
+      <li>根据优势智能选兴趣班：喜欢画画就报美术，爱运动就试试体能</li>
+      <li>每周安排一次亲子活动，在游戏中观察孩子的真实偏好</li>
+    </ul>`;
+  list.appendChild(adv2);
+
+  // 薄弱项
+  const adv3 = document.createElement('div');
+  adv3.className = 'advice-card';
+  adv3.innerHTML = `<h3><span class="dot" style="background:${weak[0].color}"></span>🌱 成长空间 · 温和提升</h3>
+    <ul>${weak.map(d=>`<li><b>${d.icon}${d.name}</b>目前得分较低，可以通过日常小游戏慢慢提升，不要强迫孩子。</li>`).join('')}</ul>`;
+  list.appendChild(adv3);
+}
+
+/* ================= 重新开始 ================= */
+function restart(){
+  G.qIndex = 0;
+  G.answers = new Array(QUESTIONS.length).fill(null);
+  showView('view-start');
+}
+document.getElementById('btnReport').onclick = ()=>showView('view-report');
+
+/* ================= 背景装饰 ================= */
+(function(){
+  const deco = document.getElementById('bgDeco');
+  const stars = ['⭐','✦','🌼','☁️'];
+  for(let i=0;i<12;i++){
+    const s = document.createElement('span');
+    s.className = 'star';
+    s.textContent = stars[i%stars.length];
+    s.style.left = Math.random()*100+'%';
+    s.style.top = Math.random()*100+'%';
+    s.style.fontSize = (16+Math.random()*20)+'px';
+    deco.appendChild(s);
+  }
+})();
+
+window.addEventListener('resize', ()=>{ if(radarChart) radarChart.resize(); });
+</script>
+</body>
+</html>
