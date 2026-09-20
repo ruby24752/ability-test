@@ -59,8 +59,9 @@ body{
   cursor:pointer;
   transition:all 0.2s;
   font-size:15px;
-  line-height:1.5;
+  line-height:1.6;
   background:#fff;
+  word-break:break-word;
 }
 .option:hover{
   background:#f9f4e8;
@@ -253,6 +254,42 @@ const questions = [
     {t:"盖世魄力，一往无前",s:[1,3,1,1,2]},
     {t:"宽厚德行，万人信服",s:[1,1,3,2,1]},
     {t:"旷世文采，流传千古",s:[1,1,2,3,1]}
+  ]},
+  {q:"你更喜欢哪种生活节奏？",o:[
+    {t:"快节奏，不断挑战新目标",s:[2,3,1,1,3]},
+    {t:"慢节奏，有时间思考和沉淀",s:[1,1,2,3,2]},
+    {t:"有规律，按计划稳步推进",s:[2,1,3,2,2]},
+    {t:"无拘束，随遇而安",s:[1,3,1,3,1]}
+  ]},
+  {q:"团队遇到危机，你第一反应是？",o:[
+    {t:"立刻制定应急方案，组织应对",s:[3,2,1,1,3]},
+    {t:"冲在最前面，承担最危险的部分",s:[1,3,1,1,2]},
+    {t:"安抚大家情绪，稳定军心",s:[1,1,3,2,1]},
+    {t:"分析问题根源，给出解决思路",s:[2,1,2,3,1]}
+  ]},
+  {q:"你更相信哪种成功方式？",o:[
+    {t:"天时地利，顺势而为",s:[3,2,1,1,2]},
+    {t:"人定胜天，敢拼才会赢",s:[1,3,1,1,2]},
+    {t:"厚德载物，德行到位自然成",s:[1,1,3,2,1]},
+    {t:"学识积累，厚积薄发",s:[2,1,2,3,1]}
+  ]},
+  {q:"面对不公平的事，你会？",o:[
+    {t:"想办法改变规则，制定新秩序",s:[2,3,1,1,3]},
+    {t:"当面指出，据理力争",s:[1,3,3,1,1]},
+    {t:"调整心态，尽人事听天命",s:[1,1,2,3,1]},
+    {t:"用策略迂回，慢慢改变现状",s:[3,1,2,2,2]}
+  ]},
+  {q:"如果写一本自传，书名更可能叫？",o:[
+    {t:"《我的帝国版图》",s:[2,3,1,1,3]},
+    {t:"《东坡居士全集》",s:[1,1,2,3,1]},
+    {t:"《千秋功过任评说》",s:[3,2,3,1,2]},
+    {t:"《将进酒》",s:[1,3,1,3,1]}
+  ]},
+  {q:"你觉得以下哪个词最能代表你？",o:[
+    {t:"谋",s:[3,1,1,2,2]},
+    {t:"勇",s:[1,3,1,1,2]},
+    {t:"仁",s:[1,1,3,2,1]},
+    {t:"雅",s:[1,1,2,3,1]}
   ]}
 ];
 
@@ -283,7 +320,6 @@ function renderQuiz(){
 function pick(qIdx,oIdx){
   userAnswers[qIdx]=oIdx;
   renderQuiz();
-  window.scrollTo(0,0);
 }
 function calcResult(){
   score = [0,0,0,0,0];
@@ -309,7 +345,7 @@ function calcResult(){
   new Chart(ctx,{type:'radar',data:{
     labels:["谋略","勇武","德行","文采","统御"],
     datasets:[{label:"你的特质",data:score,backgroundColor:'rgba(140,109,49,0.15)',borderColor:'#8c6d31',pointBackgroundColor:'#8c6d31',borderWidth:2}]
-  },options:{scales:{r:{min:0,max:36,ticks:{display:false},grid:{color:'rgba(140,109,49,0.2)'},angleLines:{color:'rgba(140,109,49,0.2)'},pointLabels:{color:'#664f2e',font:{size:14}}}}}})
+  },options:{scales:{r:{min:0,max:45,ticks:{display:false},grid:{color:'rgba(140,109,49,0.2)'},angleLines:{color:'rgba(140,109,49,0.2)'},pointLabels:{color:'#664f2e',font:{size:14}}}}}})
   window.scrollTo(0,0);
 }
 function resetQuiz(){
