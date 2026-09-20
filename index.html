@@ -37,6 +37,24 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 
+/* 背景音乐按钮 */
+.music-btn{
+  position:fixed;top:16px;right:16px;z-index:99;
+  width:48px;height:48px;border-radius:50%;
+  background:var(--card);border:3px solid var(--line);
+  display:grid;place-items:center;font-size:22px;cursor:pointer;
+  box-shadow:0 4px 0 var(--line);
+  transition:transform .2s;
+}
+.music-btn:active{transform:scale(.9);}
+.music-btn.playing{background:#FFE8CC;border-color:var(--accent);}
+
+/* 小恐龙头像 */
+.dino{
+  width:140px;height:140px;margin-bottom:24px;
+  filter:drop-shadow(0 10px 0 #E6B84A) drop-shadow(0 18px 24px rgba(230,184,74,.3));
+}
+
 /* 背景装饰 */
 .bg-deco{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
 .bg-deco .star{position:absolute;font-size:24px;opacity:.35;}
@@ -195,9 +213,35 @@ body{
 
   <!-- ===== 首页 ===== -->
   <section class="view active" id="view-start">
-    <div class="mascot">🧒</div>
+    <div class="music-btn" id="musicBtn" title="背景音乐">🔇</div>
+    <svg class="dino" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- 博士帽 -->
+      <ellipse cx="100" cy="58" rx="48" ry="12" fill="#3A2A1A"/>
+      <rect x="62" y="48" width="76" height="14" rx="4" fill="#3A2A1A"/>
+      <rect x="96" y="30" width="8" height="24" fill="#FFD93D"/>
+      <circle cx="100" cy="28" r="5" fill="#FFD93D"/>
+      <!-- 恐龙头 -->
+      <ellipse cx="100" cy="105" rx="52" ry="44" fill="#7EC850"/>
+      <!-- 肚皮 -->
+      <ellipse cx="100" cy="120" rx="32" ry="26" fill="#B8E08A"/>
+      <!-- 眼睛 -->
+      <circle cx="82" cy="95" r="10" fill="#fff"/>
+      <circle cx="118" cy="95" r="10" fill="#fff"/>
+      <circle cx="84" cy="96" r="5" fill="#2A1A0A"/>
+      <circle cx="116" cy="96" r="5" fill="#2A1A0A"/>
+      <circle cx="86" cy="94" r="2" fill="#fff"/>
+      <circle cx="118" cy="94" r="2" fill="#fff"/>
+      <!-- 腮红 -->
+      <ellipse cx="68" cy="112" rx="8" ry="5" fill="#FF9F9F" opacity=".7"/>
+      <ellipse cx="132" cy="112" rx="8" ry="5" fill="#FF9F9F" opacity=".7"/>
+      <!-- 微笑嘴 -->
+      <path d="M88 122 Q100 132 112 122" stroke="#2A1A0A" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- 背刺 -->
+      <path d="M55 85 L48 72 L60 78 Z" fill="#5A9A30"/>
+      <path d="M145 85 L152 72 L140 78 Z" fill="#5A9A30"/>
+    </svg>
     <h1 class="app-title">儿童<em>多元智能</em><br>趣味小测评</h1>
-    <p class="app-sub">基于哈佛加德纳多元智能理论，16 道小题，看看孩子天生擅长什么～</p>
+    <p class="app-sub">16 道小题，看看孩子天生擅长什么～</p>
     <div class="tag-row">
       <span class="tag">📖 语言</span>
       <span class="tag">🧮 逻辑</span>
@@ -224,6 +268,7 @@ body{
     <div class="q-card">
       <div class="q-eyebrow" id="qEyebrow">语言智能</div>
       <div class="q-text" id="qText">题目加载中…</div>
+      <div style="margin-top:12px;font-size:13px;color:var(--ink-3)">🦖 小恐龙：认真想一想哦～</div>
     </div>
     <div class="opts" id="opts"></div>
     <div class="q-foot">
@@ -488,6 +533,75 @@ function restart(){
   showView('view-start');
 }
 document.getElementById('btnReport').onclick = ()=>showView('view-report');
+
+/* ================= 背景音乐 ================= */
+let audioCtx = null;
+let musicPlaying = false;
+let musicTimer = null;
+let musicGain = null;
+
+function initAudio(){
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  musicGain = audioCtx.createGain();
+  musicGain.gain.value = 0.15; // 低音量
+  musicGain.connect(audioCtx.destination);
+}
+
+function playNote(freq, start, dur){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, audioCtx.currentTime + start);
+  gain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + start + 0.05);
+  gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + start + dur);
+  osc.connect(gain);
+  gain.connect(musicGain);
+  osc.start(audioCtx.currentTime + start);
+  osc.stop(audioCtx.currentTime + start + dur);
+}
+
+// 简单轻快旋律：C大调小星星变奏
+const melody = [
+  {f:523.25, t:0,   d:0.3}, // C
+  {f:523.25, t:0.3, d:0.3}, // C
+  {f:587.33, t:0.6, d:0.3}, // D
+  {f:587.33, t:0.9, d:0.3}, // D
+  {f:659.25, t:1.2, d:0.3}, // E
+  {f:659.25, t:1.5, d:0.3}, // E
+  {f:587.33, t:1.8, d:0.5}, // D
+  {f:523.25, t:2.3, d:0.3}, // C
+  {f:523.25, t:2.6, d:0.3}, // C
+  {f:587.33, t:2.9, d:0.3}, // D
+  {f:587.33, t:3.2, d:0.3}, // D
+  {f:523.25, t:3.5, d:0.3}, // C
+  {f:523.25, t:3.8, d:0.5}, // C
+];
+
+function playMelody(){
+  melody.forEach(n => playNote(n.f, n.t, n.d));
+  musicTimer = setTimeout(playMelody, 4300); // 循环
+}
+
+function toggleMusic(){
+  const btn = document.getElementById('musicBtn');
+  if(!audioCtx) initAudio();
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+
+  if(musicPlaying){
+    musicPlaying = false;
+    clearTimeout(musicTimer);
+    btn.textContent = '🔇';
+    btn.classList.remove('playing');
+  } else {
+    musicPlaying = true;
+    btn.textContent = '🔊';
+    btn.classList.add('playing');
+    playMelody();
+  }
+}
+document.getElementById('musicBtn').onclick = toggleMusic;
 
 /* ================= 背景装饰 ================= */
 (function(){
