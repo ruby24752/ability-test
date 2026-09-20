@@ -546,6 +546,18 @@ function renderAdvice(scores, sorted){
   const list = document.getElementById('adviceList');
   list.innerHTML = '';
   
+  // 每个智能类型对应的日常引导建议
+  const tipsMap = {
+    lang: '多陪孩子读绘本、讲故事，鼓励他表达自己的想法，不要打断他说话',
+    logic: '多和孩子玩分类、拼图、下棋等逻辑游戏，鼓励他问"为什么"并一起找答案',
+    space: '多给孩子画画、搭积木的机会，玩迷宫、找不同等视觉游戏，带他认识地图和方向',
+    body: '多安排户外活动和运动，让孩子多动手做手工、做家务，满足他的肢体探索欲',
+    music: '多放不同类型的音乐，鼓励孩子跟着哼唱、打节拍，玩打击乐器',
+    social: '多带孩子和其他小朋友一起玩，鼓励他参与集体活动，引导他观察别人的情绪',
+    self: '多给孩子自己做选择的机会，尊重他的想法，鼓励他写日记或做手工记录心情',
+    nature: '多带孩子去公园、郊外，观察动植物，养小宠物或种小植物，满足他的探索欲'
+  };
+  
   const c1 = document.createElement('div');
   c1.className = 'advice-card';
   c1.innerHTML = `
@@ -561,7 +573,8 @@ function renderAdvice(scores, sorted){
     <h3><span class="dot"></span>🌟 日常引导 · 鼓励为主</h3>
     <ul>
       <li>多表扬孩子的努力过程，不只夸"聪明"，保护他的探索兴趣。</li>
-      <li>根据孩子的优势智能选择兴趣班：喜欢画画就报美术，爱运动就试试体能。</li>
+      <li><b style="color:${top2[0].color}">针对${top2[0].name}优势：</b>${tipsMap[top2[0].key]}。</li>
+      <li><b style="color:${top2[1].color}">针对${top2[1].name}优势：</b>${tipsMap[top2[1].key]}。</li>
       <li>每周安排亲子活动，在游戏中观察孩子的真实偏好。</li>
     </ul>
   `;
